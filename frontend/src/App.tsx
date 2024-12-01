@@ -24,6 +24,7 @@ function App() {
       try {
         const sampleRate = 16000;
         const chunkRate = 100;
+
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: {
             sampleRate: sampleRate,
@@ -31,6 +32,7 @@ function App() {
             echoCancellation: true,
           },
         });
+
         mediaRecorder.current = new MediaRecorder(stream);
 
         audioContext.current = new window.AudioContext({

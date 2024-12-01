@@ -10,7 +10,6 @@ dotenv.config();
 
 const app = express();
 
-// 미들웨어 설정
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -27,7 +26,6 @@ const speechClient = new SpeechClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
 
-// 서버 생성 및 포트 설정
 const PORT = process.env.PORT || 8000;
 
 const server = app.listen(PORT, () => {
@@ -41,7 +39,7 @@ const wss = new WebSocketServer({ server });
 wss.on("connection", (ws: WebSocket) => {
   console.log("WebSocket connection established.");
 
-  // Google STT 스트림 생성
+  // STT 스트림 생성
   const recognizeStream = speechClient
     .streamingRecognize({
       config: {
@@ -65,7 +63,7 @@ wss.on("connection", (ws: WebSocket) => {
 
       console.log("Transcript:", transcript);
 
-      // 텍스트 결과를 클라이언트에 전송
+      // 텍스트 결과 클라이언트에 전송
       ws.send(JSON.stringify({ transcript }));
     });
 
@@ -87,14 +85,12 @@ wss.on("connection", (ws: WebSocket) => {
   });
 });
 
-// 404 에러 처리 미들웨어
 app.use((_req: Request, _res: Response, next: NextFunction) => {
   const error: any = new Error("404 error");
   error.status = 404;
   next(error);
 });
 
-// 에러 처리 미들웨어
 app.use((err: any, req: Request, res: Response) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
