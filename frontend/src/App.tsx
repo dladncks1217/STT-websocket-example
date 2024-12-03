@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import { createWavFile } from "./voice";
 
 function App() {
   const [voiceText, setVoiceText] = useState("");
@@ -66,7 +65,6 @@ function App() {
         mediaRecorder.current.onstop = () => {
           if (processor.current && audioContext.current) {
             stream.getTracks().forEach((track) => track.stop());
-            createWavFile(audioChunks.current);
             source.disconnect(processor.current);
             processor.current.disconnect(audioContext.current.destination);
           }
