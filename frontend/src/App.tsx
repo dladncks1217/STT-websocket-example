@@ -5,7 +5,7 @@ function App() {
   const webSocket = useRef<WebSocket>();
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
-  const processor = useRef<AudioWorkletNode>();
+  const processor = useRef<AudioWorkletNode | null>();
   const audioChunks = useRef<Uint8Array[]>([]);
 
   const closeWebSocket = () => {
@@ -90,6 +90,18 @@ function App() {
 
     ws.onclose = () => {
       console.log("커넥션 닫힘");
+      if (processor.current) {
+        processor.current.disconnect();
+        processor.current = null;
+      }
+      if (audioContext.current) {
+        audioContext.current.close();
+        audioContext.current = null;
+      }
+      if (mediaRecorder.current) {
+        mediaRecorder.current.stop();
+        mediaRecorder.current = null;
+      }
     };
 
     webSocket.current = ws;
