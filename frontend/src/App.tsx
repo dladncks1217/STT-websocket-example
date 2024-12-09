@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 
 function App() {
   const [voiceText, setVoiceText] = useState("");
+  const [isTalking, setIsTalking] = useState(false);
   const webSocket = useRef<WebSocket>();
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
@@ -59,8 +60,34 @@ function App() {
           }
         };
 
+        const analyser = audioContext.current.createAnalyser();
+        analyser.fftSize = 256;
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
         source.connect(processor.current);
         processor.current.connect(audioContext.current.destination);
+
+        source.connect(analyser);
+
+        const detectTalking = () => {
+          if (!webSocket.current) {
+            return;
+          }
+
+          analyser.getByteFrequencyData(dataArray);
+          const avgVolume =
+            dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+
+          if (avgVolume > 50) {
+            setIsTalking(true);
+          } else {
+            setIsTalking(false);
+          }
+
+          requestAnimationFrame(detectTalking);
+        };
+
+        detectTalking();
 
         mediaRecorder.current.onstop = () => {
           if (processor.current && audioContext.current) {
@@ -113,6 +140,7 @@ function App() {
       <button onClick={closeWebSocket}>멈추기</button>
       <br />
       <div>{voiceText}</div>
+      {isTalking && <div>말하는중</div>}
     </>
   );
 }
